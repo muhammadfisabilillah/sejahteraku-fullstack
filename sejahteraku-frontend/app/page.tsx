@@ -1,92 +1,131 @@
-'use client'
-import { useEffect, useState } from 'react'
-import axios from 'axios'
+"use client";
 
-export default function Home() {
-  const [jobs, setJobs] = useState([])
-  const [loading, setLoading] = useState(true)
+import React, { useState } from 'react';
+import axios from 'axios';
 
-  useEffect(() => {
-    axios.get('http://localhost:3000/jobs')
-      .then(res => {
-        setJobs(res.data)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error(err)
-        setLoading(false)
-      })
-  }, [])
+const JOBS_DATA = [
+  { id: 1, title: "Backend Developer", description: "Membangun arsitektur server yang kuat menggunakan NestJS dan PostgreSQL." },
+  { id: 2, title: "Frontend Engineer", description: "Slicing desain premium dengan Next.js, Tailwind CSS, dan Framer Motion." },
+  { id: 3, title: "DevOps Engineer", description: "Mengelola infrastruktur cloud dan CI/CD pipeline untuk aplikasi skala besar." }
+];
+
+export default function LandingPage() {
+  const [darkMode, setDarkMode] = useState(true);
 
   return (
-    <div className="min-h-screen text-slate-900 font-sans relative overflow-hidden bg-white">
+    <div className={`min-h-screen transition-colors duration-1000 font-sans overflow-hidden relative ${darkMode ? 'bg-[#020202] text-white' : 'bg-[#f8f9fa] text-[#1a1a1a]'}`}>
       
-      {/* --- BACKGROUND LAYER (BAGIAN PALING MENAWAN) --- */}
-      <div className="fixed inset-0 z-0">
-        {/* 1. Grid Pattern (Garis-garis kotak halus) */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+      {/* 🎇 DYNAMIC GRADIENT BACKGROUND (MAHAL) */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* Lingkaran Gradasi Bergerak */}
+        <div className={`absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full blur-[140px] animate-[pulse_12s_infinite] transition-colors duration-1000 ${darkMode ? 'bg-emerald-900/20' : 'bg-emerald-200/40'}`}></div>
+        <div className={`absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full blur-[140px] animate-[pulse_18s_infinite] transition-colors duration-1000 ${darkMode ? 'bg-slate-900/30' : 'bg-slate-200/50'}`}></div>
         
-        {/* 2. Cahaya Teal (Kiri Atas) */}
-        <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-[#2D6A76] opacity-[0.08] blur-[120px] animate-pulse"></div>
-        
-        {/* 3. Cahaya Gold (Kanan Bawah) */}
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-[#D99426] opacity-[0.08] blur-[120px]"></div>
-        
-        {/* 4. Efek Grainy (Biar teksturnya kayak kertas mahal) */}
-        <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+        {/* GRID OVERLAY HALUS */}
+        <div className={`absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:50px_50px]`}></div>
       </div>
 
-      {/* --- CONTENT LAYER --- */}
-      <div className="relative z-10">
-        {/* HEADER */}
-        <nav className="sticky top-0 border-b border-slate-200/50 bg-white/60 backdrop-blur-xl px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#2D6A76] flex items-center justify-center text-white font-bold">S</div>
-            <span className="font-black text-lg tracking-tighter text-[#2D6A76]">SEJAHTERAKU</span>
-          </div>
-          <button className="bg-slate-900 text-white px-6 py-2 rounded-full text-xs font-bold hover:bg-[#2D6A76] transition-all">Portal</button>
-        </nav>
-
-        {/* HERO */}
-        <header className="max-w-6xl mx-auto py-28 px-6 text-center">
-          <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#2D6A76]/5 border border-[#2D6A76]/10 text-[#2D6A76] text-[10px] font-bold tracking-widest uppercase">
-            Platform Karir Masa Depan
-          </div>
-          <h2 className="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-none">
-            Temukan <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2D6A76] via-[#3d8d9c] to-[#D99426]">Pekerjaan</span> <br /> 
-            Terbaikmu.
-          </h2>
-          <p className="text-slate-500 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-            Menghubungkan talenta hebat dengan industri logistik dan manufaktur melalui teknologi AI.
-          </p>
-          <button className="bg-[#2D6A76] text-white px-12 py-5 rounded-2xl font-bold shadow-2xl shadow-[#2D6A76]/20 hover:scale-105 transition-all">
-            Jelajahi Lowongan
+      {/* NAVBAR */}
+      <nav className="relative z-10 flex justify-between items-center px-10 py-10 max-w-7xl mx-auto">
+        <div className="text-2xl font-black tracking-[0.2em] italic uppercase">
+          SEJAHTERAKU<span className="text-emerald-500">.</span>
+        </div>
+        <div className="flex items-center gap-8">
+          <button 
+            onClick={() => setDarkMode(!darkMode)}
+            className={`text-[10px] font-black tracking-widest uppercase border-b-2 transition-all pb-1 ${darkMode ? 'border-emerald-500 text-white' : 'border-emerald-600 text-black'}`}
+          >
+            {darkMode ? 'Mode: Onyx' : 'Mode: Alabaster'}
           </button>
-        </header>
+          <button className={`px-8 py-2.5 text-[10px] font-black tracking-[0.2em] uppercase transition-all shadow-2xl ${darkMode ? 'bg-white text-black hover:bg-emerald-500' : 'bg-black text-white hover:bg-emerald-600'}`}>
+            Portal.v1
+          </button>
+        </div>
+      </nav>
 
-        {/* JOB LIST */}
-        <section className="max-w-6xl mx-auto px-6 pb-32">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {jobs.map((job: any) => (
-              <div key={job.id} className="group bg-white/40 backdrop-blur-md p-10 rounded-[2rem] border border-slate-200/50 hover:border-[#2D6A76]/30 hover:bg-white/80 transition-all duration-500 shadow-sm">
-                <div className="flex justify-between items-start mb-8">
-                   <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-xl">🏭</div>
-                   <span className="text-[11px] font-black text-[#D99426] bg-[#D99426]/10 px-4 py-1 rounded-full uppercase tracking-wider">{job.salaryRange}</span>
-                </div>
-                <h4 className="text-2xl font-black mb-2 tracking-tight uppercase">{job.position}</h4>
-                <p className="text-slate-400 text-sm font-medium mb-10">📍 {job.location} • Full-time</p>
-                <button className="w-full py-4 rounded-xl bg-white border border-slate-200 text-slate-900 font-bold hover:bg-[#2D6A76] hover:text-white hover:border-[#2D6A76] transition-all">
-                  Lamar Sekarang
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
+      {/* HERO SECTION */}
+      <main className="relative z-10 max-w-7xl mx-auto px-10 pt-24 pb-40">
+        <div className="max-w-4xl">
+          <span className="text-emerald-500 text-[10px] font-black tracking-[0.5em] uppercase mb-6 block">
+            Integrated AI Intelligence
+          </span>
+          <h1 className="text-7xl md:text-9xl font-black tracking-tighter leading-[0.8] mb-12">
+            SHAPING <br /> 
+            <span className={darkMode ? 'text-gray-400' : 'text-gray-800'}>FUTURES.</span>
+          </h1>
+          <p className={`text-lg max-w-lg leading-relaxed font-medium transition-colors duration-1000 ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
+            Portal karir eksklusif untuk sektor manufaktur & logistik. <br />
+            Dikelola dengan presisi tinggi.
+          </p>
+        </div>
 
-      <footer className="relative z-10 py-12 border-t border-slate-100 text-center text-[10px] font-bold tracking-[0.3em] text-slate-400 uppercase">
-        SejahteraKu © 2026
-      </footer>
+        {/* LIST LOWONGAN */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mt-28">
+          {JOBS_DATA.map((job) => (
+            <JobCard key={job.id} job={job} darkMode={darkMode} />
+          ))}
+        </div>
+      </main>
     </div>
-  )
+  );
+}
+
+function JobCard({ job, darkMode }: { job: any, darkMode: boolean }) {
+  const [aiAdvice, setAiAdvice] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleAskAI = async () => {
+    setIsLoading(true);
+    setAiAdvice("");
+    try {
+      const response = await axios.post('http://localhost:3000/ai/consult', {
+        title: job.title,
+        description: job.description,
+      });
+      setAiAdvice(response.data.advice);
+    } catch (error) {
+      setAiAdvice("Backend Offline.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className={`group relative p-10 border transition-all duration-700 shadow-2xl ${
+      darkMode 
+      ? 'bg-[#080808] border-white/[0.03] hover:border-emerald-500/30' 
+      : 'bg-white border-black/[0.03] hover:border-emerald-600 shadow-gray-200'
+    }`}>
+      {/* Decorative Line */}
+      <div className={`absolute top-0 left-0 w-[1px] h-0 transition-all duration-700 group-hover:h-full bg-emerald-500`}></div>
+      
+      <h4 className="text-lg font-bold mb-4 tracking-tight">{job.title}</h4>
+      <p className={`text-[11px] mb-12 h-16 leading-relaxed font-medium transition-colors ${darkMode ? 'text-gray-500' : 'text-gray-600'}`}>
+        {job.description}
+      </p>
+
+      <button
+        onClick={handleAskAI}
+        disabled={isLoading}
+        className={`w-full py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 border
+          ${isLoading 
+            ? 'bg-transparent border-gray-800 text-gray-700' 
+            : darkMode 
+              ? 'bg-white text-black border-white hover:bg-transparent hover:text-white'
+              : 'bg-black text-white border-black hover:bg-transparent hover:text-black'
+          }`}
+      >
+        {isLoading ? "Analyzing..." : "Consult AI"}
+      </button>
+
+      {aiAdvice && (
+        <div className={`mt-8 p-6 border-l-2 text-[10px] leading-relaxed font-medium animate-in fade-in slide-in-from-left-2 duration-1000 ${
+          darkMode ? 'bg-emerald-500/5 border-emerald-500 text-gray-400' : 'bg-emerald-50 border-emerald-600 text-gray-800'
+        }`}>
+          <span className="font-black text-emerald-600 block mb-2 uppercase tracking-widest">Mentor Analysis:</span>
+          "{aiAdvice}"
+        </div>
+      )}
+    </div>
+  );
 }
