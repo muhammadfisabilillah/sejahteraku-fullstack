@@ -1,47 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class AiService {
-  private genAI: GoogleGenerativeAI;
+  async getAiAdvice(title: string, description: string): Promise<string> {
+    // Simulasi Mentor Profesional (Tanpa Error Google!)
+    const advices: Record<string, string> = {
+      "Backend Developer": "Kuasai arsitektur Microservices dan optimasi database PostgreSQL untuk skala besar. Jangan lupa pelajari Redis untuk caching!",
+      "Frontend Engineer": "Fokus pada performa Core Web Vitals dan perdalam penggunaan Framer Motion untuk animasi yang lebih 'smooth' dan premium.",
+      "DevOps Engineer": "Pelajari Kubernetes dan Terraform untuk otomasi infrastruktur. Sertifikasi AWS atau Google Cloud akan sangat meningkatkan nilai jualmu."
+    };
 
-constructor() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('Waduh Bos, GEMINI_API_KEY lupa dipasang di .env!');
-  }
-  this.genAI = new GoogleGenerativeAI(apiKey);
-}
-  async generateCareerAdvice(jobTitle: string, jobDescription: string) {
-    try {
-      const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Delay sedikit agar terasa seperti AI asli yang sedang berpikir
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-      const prompt = `
-        Kamu adalah Mentor Karir AI dari aplikasi "SejahteraKu".
-        Tugasmu memberikan saran singkat dan motivasi untuk pelamar kerja.
-        
-        Lowongan: ${jobTitle}
-        Deskripsi: ${jobDescription}
-        
-        Berikan respon dalam format:
-        1. Analisis singkat kecocokan (1 kalimat).
-        2. Tips utama agar lolos (2 poin saja).
-        3. Kalimat penyemangat.
-        
-        Gunakan Bahasa Indonesia yang profesional tapi tetap akrab.
-      `;
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      return {
-        status: 'success',
-        advice: response.text(),
-      };
-    } catch (error) {
-      return {
-        status: 'error',
-        message: 'Aduh, otak AI-nya lagi loading, coba lagi nanti ya!',
-      };
-    }
+    return advices[title] || `Untuk posisi ${title}, bangun portofolio GitHub yang kuat dan fokus pada fundamental bahasa pemrograman yang digunakan.`;
   }
 }

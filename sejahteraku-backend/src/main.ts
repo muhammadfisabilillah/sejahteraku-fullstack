@@ -4,9 +4,14 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // 🔥 TAMBAHKAN BARIS INI BIAR FRONTEND BISA MANGGIL
-  app.enableCors(); 
+  // Mengaktifkan izin akses agar Frontend bisa chat ke AI
+  app.enableCors({
+    origin: '*', // Izinkan semua koneksi
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(3000);
+  console.log(`🚀 Backend SejahteraKu jalan di: http://localhost:3000`);
 }
 bootstrap();

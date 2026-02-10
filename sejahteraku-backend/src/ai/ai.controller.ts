@@ -1,12 +1,13 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { AiService } from './ai.service';
+import { AiService } from './ai.service'; // Sesuaikan namanya jika AiService
 
 @Controller('ai')
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 
   @Post('consult')
-  async getConsultation(@Body() body: { title: string; description: string }) {
-    return this.aiService.generateCareerAdvice(body.title, body.description);
+  async getConsultation(@Body() jobData: { title: string; description: string }) {
+    const advice = await this.aiService.getAiAdvice(jobData.title, jobData.description);
+    return { advice };
   }
 }

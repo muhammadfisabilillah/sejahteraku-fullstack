@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AiConsultantModule } from './ai-consultant/ai-consultant.module';
@@ -9,10 +8,21 @@ import { CompaniesModule } from './companies/companies.module';
 import { JobsModule } from './jobs/jobs.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { AiModule } from './ai/ai.module';
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, AiConsultantModule, UsersModule, CompaniesModule, JobsModule, ApplicationsModule, AiModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }), // Tambahkan ini agar .env terbaca global
+    AuthModule, 
+    PrismaModule, 
+    AiConsultantModule, 
+    UsersModule, 
+    CompaniesModule, 
+    JobsModule, 
+    ApplicationsModule, 
+    AiModule, CoursesModule
+  ],
+  controllers: [], // Kosongkan ini
+  providers: [],   // Kosongkan ini
 })
 export class AppModule {}

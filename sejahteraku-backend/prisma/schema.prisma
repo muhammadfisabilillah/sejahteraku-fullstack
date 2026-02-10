@@ -7,36 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// --- PILLAR 00: USER & AUTH ---
 model User {
   id           Int           @id @default(autoincrement())
   email        String        @unique
   password     String
-  name         String?       
-  phone        String?       
-  role         String        @default("USER") // Tambahkan ini
+  name         String?
+  phone        String?
+  role         String        @default("USER") // USER, COMPANY, ADMIN
+  createdAt    DateTime      @default(now())
+  
   profile      UserProfile?
-  chats        ChatHistory[] 
+  chats        ChatHistory[]
   applications Application[]
+  certificates Certificate[]
 }
 
 model UserProfile {
-  id         Int     @id @default(autoincrement())
-  bio        String?
-  skills     String?
-  education  String? 
-  userId     Int     @unique
-  user       User    @relation(fields: [userId], references: [id])
+  id        Int     @id @default(autoincrement())
+  bio       String?
+  skills    String?
+  education String?
+  userId    Int     @unique
+  user      User    @relation(fields: [userId], references: [id])
 }
 
-model ChatHistory {
-  id        Int      @id @default(autoincrement())
-  message   String
-  response  String
-  createdAt DateTime @default(now())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-}
-
+// --- PILLAR 01: WORK (JOB PORTAL) ---
 model Company {
   id          String       @id @default(uuid())
   name        String
@@ -52,6 +48,7 @@ model JobPosting {
   salaryRange  String?
   location     String?
   postedAt     DateTime      @default(now())
+  
   companyId    String
   company      Company       @relation(fields: [companyId], references: [id])
   applications Application[]
@@ -59,7 +56,7 @@ model JobPosting {
 
 model Application {
   id        Int      @id @default(autoincrement())
-  status    String   @default("APPLIED")
+  status    String   @default("APPLIED") // APPLIED, REVIEWING, REJECTED, ACCEPTED
   appliedAt DateTime @default(now())
   
   userId    Int
@@ -67,4 +64,40 @@ model Application {
 
   jobId     String
   job       JobPosting @relation(fields: [jobId], references: [id])
+}
+
+// --- PILLAR 02: LEARN (SKILL ACADEMY) ---
+model Course {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String
+  mentor      String
+  duration    String
+  level       String        @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  createdAt   DateTime      @default(now())
+  
+  certificates Certificate[]
+}
+
+// --- PILLAR 03: CERTIFIED (VALIDATION) ---
+model Certificate {
+  id        String   @id @default(uuid())
+  issuedAt  DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+}
+
+// --- AI INTELLIGENCE SYSTEM ---
+model ChatHistory {
+  id        Int      @id @default(autoincrement())
+  message   String
+  response  String
+  createdAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
 }
