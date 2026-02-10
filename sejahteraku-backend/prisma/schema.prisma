@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  password     String
+  name         String?       
+  phone        String?       
+  role         String        @default("USER") // Tambahkan ini
+  profile      UserProfile?
+  chats        ChatHistory[] 
+  applications Application[]
+}
+
+model UserProfile {
+  id         Int     @id @default(autoincrement())
+  bio        String?
+  skills     String?
+  education  String? 
+  userId     Int     @unique
+  user       User    @relation(fields: [userId], references: [id])
+}
+
+model ChatHistory {
+  id        Int      @id @default(autoincrement())
+  message   String
+  response  String
+  createdAt DateTime @default(now())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Company {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  isVerified  Boolean      @default(false)
+  jobs        JobPosting[]
+}
+
+model JobPosting {
+  id           String        @id @default(uuid())
+  position     String
+  requirements String?
+  salaryRange  String?
+  location     String?
+  postedAt     DateTime      @default(now())
+  companyId    String
+  company      Company       @relation(fields: [companyId], references: [id])
+  applications Application[]
+}
+
+model Application {
+  id        Int      @id @default(autoincrement())
+  status    String   @default("APPLIED")
+  appliedAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  jobId     String
+  job       JobPosting @relation(fields: [jobId], references: [id])
+}
