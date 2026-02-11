@@ -9,10 +9,12 @@ import { JobsModule } from './jobs/jobs.module';
 import { ApplicationsModule } from './applications/applications.module';
 import { AiModule } from './ai/ai.module';
 import { CoursesModule } from './courses/courses.module';
+import { CertificatesModule } from './certificates/certificates.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // Tambahkan ini agar .env terbaca global
+    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule, 
     PrismaModule, 
     AiConsultantModule, 
@@ -20,9 +22,11 @@ import { CoursesModule } from './courses/courses.module';
     CompaniesModule, 
     JobsModule, 
     ApplicationsModule, 
-    AiModule, CoursesModule
+    AiModule, 
+    CoursesModule, 
+    CertificatesModule, ProfileModule
   ],
-  controllers: [], // Kosongkan ini
-  providers: [],   // Kosongkan ini
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

@@ -1,0 +1,19 @@
+### 1. LOGIN DULU
+# @name login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "bio": "Fullstack Developer SejahteraKu yang gak mau pusing error.",
+  "skills": "NestJS, Go, Prisma, dan Kopi Hitam",
+  "education": "Universitas Coding Indonesia"
+}
+
+### 2. TANYA AI (Klik setelah login di atas sukses)
+POST http://localhost:3000/ai-consultant/ask
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.access_token}}
+
+{
+  "question": "Halo AI, beri saya motivasi belajar pemrograman!"
+}

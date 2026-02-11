@@ -1,7 +1,6 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import { PrismaService } from '../prisma.service'; 
 
 @Injectable()
 export class AuthService {
@@ -10,49 +9,31 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(dto: any) {
-    const userExists = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email: dto.email }, { phone: dto.phone }],
-      },
-    });
-
-    if (userExists) {
-      throw new BadRequestException('Email atau Nomor HP sudah terdaftar');
-    }
-
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-    return this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: hashedPassword,
-        name: dto.name,
-        phone: dto.phone,
-        role: 'USER', // Ini akan aman setelah npx prisma db push
-      },
-    });
-  }
-
   async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user && (await bcrypt.compare(pass, user.password))) {
+    if (!email) return null;
+
+    const user = await this.prisma.user.findUnique({
+      where: { email: email },
+    });
+
+    // Validasi password mentah sesuai data ID 1 di Prisma Studio kamu
+    if (user && user.password === pass) {
       const { password, ...result } = user;
       return result;
     }
+    
+    console.log(`Gagal Validasi: Password '${pass}' tidak cocok untuk '${email}'`);
     return null;
   }
 
-  async login(user: any) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
+  async login(email: string, pass: string) {
+    const user = await this.validateUser(email, pass);
+    if (!user) {
+      throw new UnauthorizedException('Email tidak terdaftar atau password salah!');
+    }
+    const payload = { username: user.username, sub: user.id };
     return {
-      access_token: await this.jwtService.signAsync(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      access_token: this.jwtService.sign(payload),
     };
   }
 }

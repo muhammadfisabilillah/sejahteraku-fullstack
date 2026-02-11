@@ -1,20 +1,17 @@
-import { Controller, Post, Get, Body, UseGuards, Request } from '@nestjs/common';
-import { AiConsultantService } from './ai-consultant.service'; // Pastikan nama ini cocok
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { AiConsultantService } from './ai-consultant.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // Pastikan guard kamu sudah benar lokasinya
 
 @Controller('ai-consultant')
 export class AiConsultantController {
   constructor(private readonly aiConsultantService: AiConsultantService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard) // Satpam: Cek token JWT
   @Post('ask')
-  async askAi(@Request() req, @Body('prompt') prompt: string) {
-    return this.aiConsultantService.askAi(req.user.userId, prompt);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('history')
-  async getHistory(@Request() req) {
-    return this.aiConsultantService.getHistory(req.user.userId);
+  async ask(@Body('question') question: string) {
+    if (!question) {
+      return { response: 'Tanya apa dulu nih? Masak pesannya kosong hehe.' };
+    }
+    return this.aiConsultantService.askAI(question);
   }
 }
