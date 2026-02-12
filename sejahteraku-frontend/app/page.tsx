@@ -1,565 +1,493 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  ArrowRight, 
+  GraduationCap, 
   Briefcase, 
-  BookOpen, 
   Award, 
+  Users, 
+  TrendingUp, 
   Heart,
-  Play,
-  Users,
+  ArrowRight,
+  CheckCircle2,
+  Target,
+  Sparkles,
   Building2,
-  TrendingUp,
-  MapPin,
-  Phone,
-  Mail,
-  Instagram,
-  Linkedin,
-  Twitter,
-  Facebook,
+  BookOpen,
+  ChevronDown,
   Menu,
   X,
-  ChevronUp,
-  Star
+  Instagram,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Send,
+  MessageSquare,
+  Chrome,
+  Figma,
+  Layers,
+  Zap,
+  Cpu
 } from 'lucide-react';
+import { askAI } from '@/lib/api';
 
 export default function Home() {
   const router = useRouter();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState(1);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // --- LOGIC CHAT AI ---
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'ai' as const, text: 'Halo Muhammad! 👋 Ada yang bisa saya bantu soal karier kamu hari ini?' }
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // --- LOGIC LOGIN ---
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [chatHistory, isLoading]);
+
+  const handleSend = async () => {
+    if (!message.trim() || isLoading) return;
+    const userMsg = message;
+    setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
+    setMessage('');
+    setIsLoading(true);
+    try {
+      const response = await askAI(userMsg);
+      setChatHistory(prev => [...prev, { role: 'ai', text: response }]);
+    } catch (err) {
+      setChatHistory(prev => [...prev, { role: 'ai', text: 'Koneksi bermasalah, pastikan backend port 3000 jalan!' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3000/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginData),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('token', data.access_token);
+        setIsLoginOpen(false);
+        router.push('/dashboard');
+      } else {
+        alert(data.message || 'Email atau Password salah!');
+      }
+    } catch (err) {
+      alert('Gagal terhubung ke backend port 3000!');
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-      setShowScrollTop(window.scrollY > 300);
+      setScrolled(window.scrollY > 100);
+      const scrollPosition = window.scrollY + window.innerHeight / 2;
+      const sections = document.querySelectorAll('section[data-section]');
+      sections.forEach((section) => {
+        const sectionTop = (section as HTMLElement).offsetTop;
+        const sectionHeight = (section as HTMLElement).offsetHeight;
+        const sectionNumber = parseInt(section.getAttribute('data-section') || '0');
+        if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+          setActiveSection(sectionNumber);
+        }
+      });
+    };
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    alert('Terima kasih! Pesan Anda telah terkirim. Kami akan segera menghubungi Anda 🙏');
-    e.currentTarget.reset();
-  };
-
   return (
-    <div className="min-h-screen bg-amber-50/30 font-sans text-stone-800">
+    <div className="min-h-screen bg-[#0c0a09] selection:bg-amber-500/30 selection:text-amber-200 overflow-x-hidden">
+      
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-xl shadow-md' 
-          : 'bg-gradient-to-b from-black/30 to-transparent'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg transform hover:rotate-6 transition-transform">
-              <Heart size={24} className="text-white fill-white" />
-            </div>
-            <span className={`text-2xl font-bold tracking-tight ${isScrolled ? 'text-stone-800' : 'text-white drop-shadow-lg'}`}>
-              Sejahtera<span className="font-light opacity-80">Ku</span>
+      <nav className={`fixed top-0 w-full z-[100] transition-all duration-700 ease-in-out ${scrolled ? 'py-4 bg-[#0c0a09]/90 backdrop-blur-xl border-b border-white/5 shadow-2xl' : 'py-8 bg-transparent'}`}>
+        <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
+          <div className="flex items-center">
+            <span className="text-2xl font-display font-bold tracking-tighter text-white uppercase italic transition-transform duration-500 hover:scale-105">
+              Sejahtera<span className="text-amber-500">Ku</span>
             </span>
           </div>
-          
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-8">
-            {['Beranda', 'Tentang', 'Layanan', 'Galeri', 'Kontak'].map((item, idx) => (
-              <a 
-                key={idx}
-                href={`#${item.toLowerCase()}`} 
-                className={`font-medium transition-colors ${
-                  isScrolled 
-                    ? 'text-stone-700 hover:text-amber-600' 
-                    : 'text-white hover:text-amber-300 drop-shadow'
-                }`}
-              >
-                {item}
-              </a>
+          <div className="hidden md:flex items-center gap-12 text-white">
+            {['Visi', 'Eksplorasi', 'Benefit', 'Dampak', 'FAQ'].map((item, idx) => (
+              <a key={idx} href={`#section-${idx + 1}`} className={`text-[11px] uppercase tracking-[0.3em] font-bold transition-all duration-500 hover:text-amber-500 ${activeSection === idx + 1 ? 'text-amber-500' : 'text-stone-500'}`}>{item}</a>
             ))}
+            <button onClick={() => setIsLoginOpen(true)} className="px-8 py-3 bg-white text-[#0c0a09] text-[11px] uppercase tracking-[0.2em] font-bold rounded-full hover:bg-amber-500 hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all duration-500 active:scale-95">Account</button>
           </div>
-          
-          <div className="hidden md:flex gap-4">
-            <button className={`px-5 py-2.5 text-sm font-medium transition-colors ${
-              isScrolled 
-                ? 'text-stone-700 hover:text-amber-600' 
-                : 'text-white hover:text-amber-300'
-            }`}>
-              Masuk
-            </button>
-            <button className="px-6 py-2.5 text-sm font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full hover:shadow-xl transition-all transform hover:scale-105">
-              Daftar Sekarang
-            </button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`md:hidden p-2 ${isScrolled ? 'text-stone-800' : 'text-white'}`}
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-stone-200 shadow-lg">
-            <div className="px-6 py-4 flex flex-col gap-4">
-              {['Beranda', 'Tentang', 'Layanan', 'Galeri', 'Kontak'].map((item, idx) => (
-                <a 
-                  key={idx}
-                  href={`#${item.toLowerCase()}`} 
-                  className="text-lg font-medium text-stone-700" 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item}
-                </a>
-              ))}
-              <button className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full font-bold mt-2">
-                Daftar Sekarang
-              </button>
-            </div>
-          </div>
-        )}
       </nav>
 
-      {/* Hero Section - Indonesian Vibes */}
-      <section id="beranda" className="relative min-h-screen flex items-center overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0 w-full h-full">
-          <img 
-            src="/hero-image.jpg" 
-            alt="Indonesia Background" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+      {/* 01: Hero Section */}
+      <section data-section="1" id="section-1" className="relative min-h-screen flex items-center px-6 md:px-12">
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <img src="/hero-image.jpg" className="w-full h-full object-cover opacity-60 grayscale scale-100 hover:scale-105 transition-transform duration-[3000ms] ease-out" alt="Background" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0c0a09] via-[#0c0a09]/60 to-transparent" />
         </div>
-        
-        <div className="max-w-7xl mx-auto px-6 pt-20 pb-16 relative z-10">
-          <div className="max-w-3xl">
-            <div className="animate-fade-in-up mb-6">
-              <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/95 backdrop-blur-sm text-amber-700 rounded-full text-sm font-bold shadow-lg border border-amber-200">
-                <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                Platform Karier Indonesia Terpercaya
-              </span>
+        <div className="max-w-7xl mx-auto w-full relative z-10 text-white animate-in fade-in slide-in-from-left-8 duration-1000">
+          <h1 className="text-7xl md:text-[120px] font-display font-bold leading-[0.95] mb-8 tracking-tighter">
+            Wujudkan <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-stone-600">Masa Depan</span> <br />
+            <span className="italic font-normal text-amber-500">Sejahtera.</span>
+          </h1>
+          <p className="text-xl md:text-2xl text-stone-400 max-w-2xl leading-relaxed mb-12 font-light">
+            Platform ekosistem karier digital yang dirancang untuk mengakselerasi potensi talenta bangsa melalui edukasi dan peluang tanpa batas.
+          </p>
+          <button className="group px-10 py-5 bg-amber-500 text-black font-bold rounded-full flex items-center gap-4 hover:bg-amber-400 hover:shadow-2xl transition-all duration-500 active:scale-95">
+            <span className="text-sm uppercase tracking-widest">Mulai Sekarang</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
+          </button>
+        </div>
+      </section>
+
+      {/* 02: Eksplorasi Section */}
+      <section data-section="2" id="section-2" className="py-32 px-6 md:px-12 bg-white text-[#0c0a09] rounded-[4rem] relative z-10 shadow-[0_-20px_80px_rgba(0,0,0,0.3)] transition-all duration-700">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-end mb-24">
+            <div className="lg:col-span-7">
+              <h2 className="text-5xl md:text-8xl font-display font-bold leading-none mb-8 tracking-tighter transition-all">Eksplorasi Tanpa <br/>Batasan Ruang.</h2>
             </div>
-            
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-white mb-6 animate-fade-in-up animation-delay-100 drop-shadow-2xl">
-              Wujudkan Karier Impianmu Bersama Kami
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-white/95 leading-relaxed mb-10 animate-fade-in-up animation-delay-200 drop-shadow-lg font-medium">
-              Bergabunglah dengan ribuan profesional Indonesia yang telah menemukan kesuksesan karier bersama SejahteraKu 🌟
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up animation-delay-300">
-              <button 
-                onClick={() => router.push('/chat-consultant')}
-                className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full font-bold hover:shadow-2xl transition-all flex items-center justify-center gap-2 transform hover:scale-105"
+            <div className="lg:col-span-5 pb-4">
+              <p className="text-xl text-stone-600 leading-relaxed font-light italic">Kami menyediakan instrumen terbaik untuk mengasah keterampilan baru, terhubung dengan industri, dan membangun reputasi profesional yang solid.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { 
+                icon: <GraduationCap />, 
+                title: "Skill Academy", 
+                desc: "Kurikulum terkurasi dari para praktisi ahli di bidangnya.",
+                bgImage: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop" // Team working/studying together
+              },
+              { 
+                icon: <Briefcase />, 
+                title: "Career Hub", 
+                desc: "Akses eksklusif ke berbagai peluang karier di perusahaan ternama.",
+                bgImage: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop" // Business meeting
+              },
+              { 
+                icon: <Award />, 
+                title: "Certification", 
+                desc: "Validasi keahlianmu dengan sertifikat berstandar industri.",
+                bgImage: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop" // Team celebration/success
+              }
+            ].map((item, idx) => (
+              <div 
+                key={idx} 
+                className="group relative overflow-hidden rounded-[2.5rem] border border-stone-200 aspect-[4/5] p-10 flex flex-col justify-between transition-all duration-700 ease-in-out hover:-translate-y-4 hover:shadow-2xl"
+                style={{
+                  backgroundImage: `url(${item.bgImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
               >
-                Mulai Konsultasi Gratis
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <button className="px-8 py-4 bg-white/95 backdrop-blur-sm text-stone-800 rounded-full font-bold hover:bg-white transition-all flex items-center justify-center gap-2 shadow-lg">
-                <Play className="w-4 h-4 fill-current" />
-                Lihat Cerita Sukses
-              </button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 mt-16 animate-fade-in-up animation-delay-400">
-              {[
-                { num: '50K+', label: 'Pengguna' },
-                { num: '1000+', label: 'Perusahaan' },
-                { num: '95%', label: 'Puas' }
-              ].map((stat, idx) => (
-                <div key={idx} className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-1">{stat.num}</div>
-                  <p className="text-white/90 font-medium text-sm md:text-base">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Wave Decoration */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-            <path d="M0 0L60 10C120 20 240 40 360 46.7C480 53 600 47 720 43.3C840 40 960 40 1080 46.7C1200 53 1320 67 1380 73.3L1440 80V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V0Z" fill="#fffbeb" fillOpacity="0.3"/>
-            <path d="M0 40L60 46.7C120 53 240 67 360 73.3C480 80 600 80 720 73.3C840 67 960 53 1080 46.7C1200 40 1320 40 1380 40H1440V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V40Z" fill="#fffbeb"/>
-          </svg>
-        </div>
-      </section>
-
-      {/* Fitur Unggulan Bar */}
-      <section className="py-8 bg-white border-y border-amber-200/50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { icon: <Briefcase className="w-7 h-7" />, title: 'Job Portal', desc: 'Lowongan Terkurasi', color: 'from-amber-400 to-orange-500' },
-              { icon: <BookOpen className="w-7 h-7" />, title: 'Skill Academy', desc: 'Kursus Premium', color: 'from-orange-400 to-red-500' },
-              { icon: <Award className="w-7 h-7" />, title: 'Sertifikasi', desc: 'Validasi Resmi', color: 'from-amber-500 to-orange-600' }
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-amber-50 transition-all cursor-pointer group">
-                <div className={`p-3.5 bg-gradient-to-br ${item.color} rounded-xl shadow-lg text-white group-hover:scale-110 transition-transform`}>
-                  {item.icon}
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg text-stone-800">{item.title}</h3>
-                  <p className="text-stone-600 text-sm">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tentang Section */}
-      <section id="tentang" className="py-20 bg-gradient-to-b from-amber-50/50 to-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="inline-block px-5 py-2.5 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 rounded-full text-sm font-bold mb-4 border border-amber-200">
-              Tentang Kami
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-stone-800">
-              Kenapa Pilih <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600">SejahteraKu</span>?
-            </h2>
-            <p className="text-xl text-stone-600 max-w-3xl mx-auto leading-relaxed">
-              Kami memahami perjalanan karier di Indonesia. Platform kami dirancang khusus untuk membantu profesional Indonesia mencapai kesuksesan 🇮🇩
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <Users className="w-8 h-8" />,
-                title: 'Bimbingan Personal',
-                desc: 'Konsultasi karier dengan mentor berpengalaman yang paham tantangan profesional di Indonesia.',
-                color: 'from-amber-400 to-orange-500'
-              },
-              {
-                icon: <Building2 className="w-8 h-8" />,
-                title: 'Lowongan Terpercaya',
-                desc: 'Akses ribuan lowongan dari perusahaan terkemuka di seluruh Indonesia yang sudah terverifikasi.',
-                color: 'from-orange-400 to-red-500'
-              },
-              {
-                icon: <TrendingUp className="w-8 h-8" />,
-                title: 'Pengembangan Skill',
-                desc: 'Kursus online berkualitas dengan materi yang disesuaikan dengan kebutuhan industri Indonesia.',
-                color: 'from-amber-500 to-orange-600'
-              }
-            ].map((item, idx) => (
-              <div key={idx} className="group bg-white rounded-3xl p-8 shadow-md hover:shadow-2xl transition-all duration-500 border-2 border-amber-100 hover:border-amber-300 transform hover:-translate-y-2">
-                <div className={`w-16 h-16 bg-gradient-to-br ${item.color} rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg group-hover:scale-110 transition-transform`}>
-                  {item.icon}
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-stone-800">{item.title}</h3>
-                <p className="text-stone-600 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Layanan Section */}
-      <section id="layanan" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="inline-block px-5 py-2.5 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 rounded-full text-sm font-bold mb-4 border border-amber-200">
-              Layanan Kami
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-stone-800">
-              Solusi Lengkap untuk <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600">Karier Anda</span>
-            </h2>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                icon: <Briefcase className="w-7 h-7" />,
-                title: 'Job Portal Indonesia',
-                desc: 'Platform pencarian kerja dengan AI matching yang menghubungkan Anda dengan peluang karier terbaik di seluruh Indonesia.',
-                features: ['Smart Job Matching', 'Perusahaan Terverifikasi', 'Interview Tips'],
-                color: 'from-amber-500 to-orange-600'
-              },
-              {
-                icon: <BookOpen className="w-7 h-7" />,
-                title: 'Skill Academy',
-                desc: 'Ribuan kursus online dari instruktur terbaik Indonesia untuk meningkatkan kompetensi profesional Anda.',
-                features: ['Video HD Berkualitas', 'Sertifikat Resmi', 'Akses Selamanya'],
-                color: 'from-orange-500 to-red-600'
-              },
-              {
-                icon: <Users className="w-7 h-7" />,
-                title: 'Career Coaching',
-                desc: 'Sesi konsultasi pribadi dengan career coach profesional bersertifikat untuk mencapai tujuan karier Anda.',
-                features: ['Konsultasi 1-on-1', 'Personalized Roadmap', 'Follow-up Support'],
-                color: 'from-amber-600 to-orange-700'
-              },
-              {
-                icon: <Award className="w-7 h-7" />,
-                title: 'CV & Portfolio Builder',
-                desc: 'Tools canggih untuk membuat CV profesional dan portfolio menarik yang sesuai dengan standar HR Indonesia.',
-                features: ['Template Modern', 'ATS-Friendly', 'Gratis Revisi'],
-                color: 'from-orange-600 to-red-700'
-              }
-            ].map((item, idx) => (
-              <div key={idx} className="bg-gradient-to-br from-white to-amber-50/30 border-2 border-amber-200/50 rounded-3xl p-8 hover:shadow-2xl transition-all duration-500 group">
-                <div className="flex items-start gap-6">
-                  <div className={`w-16 h-16 bg-gradient-to-br ${item.color} rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg text-white group-hover:scale-110 transition-transform`}>
+                {/* Overlay gelap untuk readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30 group-hover:from-black/90 group-hover:via-black/60 transition-all duration-700"></div>
+                
+                <div className="relative z-10">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-amber-500 group-hover:border-amber-500 group-hover:text-black transition-all duration-500 shadow-lg text-white">
                     {item.icon}
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-bold mb-3 text-stone-800">{item.title}</h3>
-                    <p className="text-stone-600 leading-relaxed mb-4">{item.desc}</p>
-                    <ul className="space-y-2">
-                      {item.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2 text-stone-700">
-                          <div className="w-2 h-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" />
-                          <span className="font-medium">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <h3 className="text-3xl font-display font-bold mb-4 text-white drop-shadow-lg">{item.title}</h3>
+                  <p className="text-white/90 font-light italic leading-relaxed drop-shadow-md">{item.desc}</p>
                 </div>
+                
+                <div className="relative z-10 flex justify-between items-center text-sm uppercase font-bold tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0 text-white drop-shadow-lg">
+                  Pelajari <ArrowRight className="w-6 h-6" />
+                </div>
+                
+                {/* Shine effect on hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 translate-x-[-100%] group-hover:translate-x-[100%] group-hover:duration-[1500ms]"></div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Gallery Section */}
-      <section id="galeri" className="py-20 bg-gradient-to-b from-amber-50/30 to-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="inline-block px-5 py-2.5 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 rounded-full text-sm font-bold mb-4 border border-amber-200">
-              Galeri
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-stone-800">
-              Momen Berharga <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600">Bersama Kami</span>
-            </h2>
-            <p className="text-xl text-stone-600 max-w-3xl mx-auto leading-relaxed">
-              Lihat bagaimana kami membantu ribuan profesional Indonesia mencapai impian karier mereka 📸
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[
-              { img: 'photo-1542744173-8e7e53415bb0', title: 'Workshop Karier', loc: 'Jakarta, 2024' },
-              { img: 'photo-1531482615713-2afd69097998', title: 'Networking Event', loc: 'Surabaya, 2024' },
-              { img: 'photo-1557804506-669a67965ba0', title: 'Training Session', loc: 'Bandung, 2024' },
-              { img: 'photo-1521737711867-e3b97375f902', title: 'Success Story', loc: 'Online, 2024' },
-              { img: 'photo-1552664730-d307ca884978', title: 'Team Building', loc: 'Bali, 2024' },
-              { img: 'photo-1600880292203-757bb62b4baf', title: 'Webinar Series', loc: 'Online, 2024' },
-              { img: 'photo-1556761175-5973dc0f32e7', title: 'Career Fair', loc: 'Yogyakarta, 2024' },
-              { img: 'photo-1559136555-9303baea8ebd', title: 'Mentoring', loc: 'Semarang, 2024' }
-            ].map((item, idx) => (
-              <div key={idx} className="group relative overflow-hidden rounded-2xl aspect-square cursor-pointer shadow-md hover:shadow-2xl transition-all">
-                <img 
-                  src={`https://images.unsplash.com/${item.img}?w=600&q=80`}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-5">
-                  <div className="text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h4 className="font-bold text-base md:text-lg mb-1">{item.title}</h4>
-                    <p className="text-xs md:text-sm opacity-90">{item.loc}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="kontak" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 items-start">
-            <div>
-              <span className="inline-block px-5 py-2.5 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 rounded-full text-sm font-bold mb-6 border border-amber-200">
-                Hubungi Kami
-              </span>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-stone-800">
-                Mari Wujudkan <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600">Karier Impian</span> Anda
-              </h2>
-              <p className="text-xl text-stone-600 mb-10 leading-relaxed">
-                Tim kami siap membantu! Hubungi kami untuk konsultasi gratis atau tanya-tanya seputar layanan kami 💬
-              </p>
-              
-              <div className="space-y-6 mb-10">
-                {[
-                  { icon: <MapPin className="w-6 h-6" />, title: 'Alamat', text: 'Jl. Sudirman No. 123, Jakarta Pusat, 10220', color: 'from-amber-400 to-orange-500' },
-                  { icon: <Phone className="w-6 h-6" />, title: 'Telepon', text: '+62 21 1234 5678', color: 'from-orange-400 to-red-500' },
-                  { icon: <Mail className="w-6 h-6" />, title: 'Email', text: 'halo@sejahteraku.com', color: 'from-amber-500 to-orange-600' }
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-4 group">
-                    <div className={`w-14 h-14 bg-gradient-to-br ${item.color} rounded-2xl flex items-center justify-center flex-shrink-0 text-white shadow-md group-hover:scale-110 transition-transform`}>
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-lg mb-1 text-stone-800">{item.title}</h4>
-                      <p className="text-stone-600">{item.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div>
-                <h4 className="font-bold text-lg mb-4 text-stone-800">Ikuti Kami di Media Sosial</h4>
-                <div className="flex gap-4">
-                  {[
-                    { icon: <Instagram />, title: 'Instagram', color: 'hover:bg-pink-500' },
-                    { icon: <Linkedin />, title: 'LinkedIn', color: 'hover:bg-blue-600' },
-                    { icon: <Twitter />, title: 'Twitter', color: 'hover:bg-sky-500' },
-                    { icon: <Facebook />, title: 'Facebook', color: 'hover:bg-blue-700' }
-                  ].map((social, idx) => (
-                    <a 
-                      key={idx}
-                      href="#" 
-                      className={`w-12 h-12 rounded-xl border-2 border-amber-300 bg-amber-50 flex items-center justify-center ${social.color} hover:text-white hover:border-transparent transition-all hover:-translate-y-1 shadow-md`}
-                      title={social.title}
-                    >
-                      {social.icon}
-                    </a>
-                  ))}
-                </div>
-              </div>
+      {/* 03: Stats Section */}
+      <section data-section="3" id="section-3" className="py-40 px-6 md:px-12 text-white bg-[#0c0a09]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
+          {[
+            { val: "250K+", label: "Aktif Member" }, { val: "1.2K+", label: "Mitra Industri" },
+            { val: "850+", label: "Kurikulum Kursus" }, { val: "92%", label: "Tingkat Kesuksesan" }
+          ].map((stat, idx) => (
+            <div key={idx} className="hover:scale-105 transition-transform duration-500">
+              <div className="text-6xl md:text-7xl font-display font-bold mb-4 tracking-tighter text-white">{stat.val}</div>
+              <div className="text-[10px] uppercase tracking-[0.5em] font-bold text-amber-500">{stat.label}</div>
             </div>
-            
-            {/* Contact Form */}
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl shadow-xl p-8 md:p-10 border-2 border-amber-200">
-              <h3 className="text-2xl font-bold mb-6 text-stone-800">Kirim Pesan kepada Kami</h3>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-bold mb-2 text-stone-700">Nama Lengkap</label>
-                  <input 
-                    type="text" 
-                    className="w-full px-4 py-3.5 border-2 border-amber-200 bg-white rounded-xl focus:outline-none focus:border-amber-500 transition-colors"
-                    placeholder="Masukkan nama Anda"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-bold mb-2 text-stone-700">Email</label>
-                  <input 
-                    type="email" 
-                    className="w-full px-4 py-3.5 border-2 border-amber-200 bg-white rounded-xl focus:outline-none focus:border-amber-500 transition-colors"
-                    placeholder="nama@email.com"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-bold mb-2 text-stone-700">Nomor WhatsApp</label>
-                  <input 
-                    type="tel" 
-                    className="w-full px-4 py-3.5 border-2 border-amber-200 bg-white rounded-xl focus:outline-none focus:border-amber-500 transition-colors"
-                    placeholder="+62 812 3456 7890"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-bold mb-2 text-stone-700">Pesan</label>
-                  <textarea 
-                    className="w-full px-4 py-3.5 border-2 border-amber-200 bg-white rounded-xl focus:outline-none focus:border-amber-500 transition-colors resize-none"
-                    rows={5}
-                    placeholder="Ceritakan kebutuhan Anda..."
-                    required
-                  />
-                </div>
-                
-                <button 
-                  type="submit"
-                  className="w-full px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-full font-bold hover:shadow-2xl transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+          ))}
+        </div>
+      </section>
+
+      {/* 04: Impacts Section - LOGO PERUSAHAAN PREMIUM */}
+      <section data-section="4" id="section-4" className="py-32 px-6 md:px-12 bg-white text-[#0c0a09] rounded-[4rem] relative z-10 text-center overflow-hidden">
+         <div className="absolute inset-0 bg-gradient-to-br from-stone-50 to-amber-50/30 opacity-50"></div>
+         <div className="relative z-10">
+           <h2 className="text-4xl md:text-6xl font-display font-bold mb-6 tracking-tighter">Dipercaya Oleh Industri Terbaik.</h2>
+           <p className="text-stone-600 mb-16 max-w-2xl mx-auto italic">Mitra strategis kami adalah perusahaan global yang memimpin transformasi digital dunia</p>
+           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-12">
+              {[
+                { 
+                  logo: (
+                    <svg viewBox="0 0 120 40" className="w-24 h-10">
+                      <text x="10" y="28" className="font-bold text-2xl" fill="currentColor">Google</text>
+                    </svg>
+                  ), 
+                  name: "Google" 
+                },
+                { 
+                  logo: (
+                    <svg viewBox="0 0 120 40" className="w-24 h-10">
+                      <circle cx="20" cy="20" r="8" fill="#EA4335"/>
+                      <circle cx="40" cy="20" r="8" fill="#4285F4"/>
+                      <circle cx="60" cy="20" r="8" fill="#FBBC04"/>
+                      <circle cx="80" cy="20" r="8" fill="#34A853"/>
+                      <circle cx="100" cy="20" r="8" fill="#A142F4"/>
+                    </svg>
+                  ), 
+                  name: "Figma" 
+                },
+                { 
+                  logo: (
+                    <svg viewBox="0 0 120 40" className="w-24 h-10">
+                      <rect x="10" y="10" width="20" height="20" fill="#635BFF" rx="4"/>
+                      <text x="35" y="28" className="font-bold text-xl" fill="currentColor">Stripe</text>
+                    </svg>
+                  ), 
+                  name: "Stripe" 
+                },
+                { 
+                  logo: (
+                    <svg viewBox="0 0 120 40" className="w-28 h-10">
+                      <path d="M10 20 L30 10 L30 30 Z" fill="currentColor"/>
+                      <text x="35" y="28" className="font-bold text-xl" fill="currentColor">Vercel</text>
+                    </svg>
+                  ), 
+                  name: "Vercel" 
+                },
+                { 
+                  logo: (
+                    <svg viewBox="0 0 120 40" className="w-20 h-10">
+                      <text x="10" y="28" className="font-bold text-2xl" fill="#0071C5" style={{fontFamily: 'Arial, sans-serif'}}>intel</text>
+                    </svg>
+                  ), 
+                  name: "Intel" 
+                }
+              ].map((partner, i) => (
+                <div 
+                  key={i} 
+                  className="group flex flex-col items-center justify-center gap-3 p-8 rounded-3xl border border-stone-200/50 bg-white/50 backdrop-blur-sm hover:bg-white hover:shadow-2xl hover:border-amber-500/20 transition-all duration-700 hover:-translate-y-2"
+                  style={{
+                    animation: `float ${3 + i * 0.3}s ease-in-out infinite`,
+                    animationDelay: `${i * 0.2}s`
+                  }}
                 >
-                  Kirim Pesan Sekarang
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </form>
+                  <div className="opacity-60 group-hover:opacity-100 transition-opacity duration-500 group-hover:scale-110 transform transition-transform">
+                    {partner.logo}
+                  </div>
+                  <span className="font-bold tracking-wider text-[10px] uppercase text-stone-400 group-hover:text-amber-600 transition-colors duration-500">{partner.name}</span>
+                </div>
+              ))}
+           </div>
+         </div>
+         <style jsx>{`
+           @keyframes float {
+             0%, 100% { transform: translateY(0px); }
+             50% { transform: translateY(-10px); }
+           }
+         `}</style>
+      </section>
+
+      {/* 05: FAQ Section */}
+      <section data-section="5" id="section-5" className="py-32 px-6 md:px-12 text-white max-w-4xl mx-auto bg-transparent">
+        <h2 className="text-5xl md:text-7xl font-display font-bold mb-20 text-center tracking-tighter">Pahami <span className="italic text-stone-500">Detailnya.</span></h2>
+        <div className="space-y-6">
+          {[
+            { q: "Bagaimana cara bergabung?", a: "Cukup daftar melalui tombol Account di navigasi atas." },
+            { q: "Apakah akses ini gratis?", a: "SejahteraKu memberikan akses gratis untuk modul dasar bagi semua talenta." },
+            { q: "Apakah sertifikat diakui?", a: "Ya, sertifikat kami divalidasi langsung oleh mitra industri nasional." }
+          ].map((faq, idx) => (
+            <div key={idx} className="group p-8 border border-white/5 rounded-[2rem] hover:bg-white/5 transition-all duration-500 ease-in-out">
+              <div className="flex justify-between items-center cursor-pointer font-bold font-display text-xl">
+                <h3>{faq.q}</h3>
+                <ChevronDown className="w-5 h-5 text-stone-600 group-hover:text-amber-500 group-hover:rotate-180 transition-all duration-500" />
+              </div>
+              <div className="max-h-0 group-hover:max-h-40 overflow-hidden transition-all duration-700 ease-in-out">
+                <p className="mt-6 text-stone-500 font-light leading-relaxed">{faq.a}</p>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-b from-stone-800 to-stone-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Heart size={24} className="fill-white" />
-                </div>
-                <span className="text-2xl font-bold">Sejahtera<span className="font-light text-amber-200">Ku</span></span>
-              </div>
-              <p className="text-stone-300 leading-relaxed">
-                Platform karier Indonesia yang membantu Anda mencapai kesuksesan profesional 🇮🇩
-              </p>
-            </div>
-            
-            {[
-              { 
-                title: 'Perusahaan',
-                links: ['Tentang Kami', 'Tim Kami', 'Karier', 'Blog']
-              },
-              {
-                title: 'Layanan',
-                links: ['Job Portal', 'Skill Academy', 'Career Coaching', 'CV Builder']
-              },
-              {
-                title: 'Bantuan',
-                links: ['FAQ', 'Kontak', 'Kebijakan Privasi', 'Syarat & Ketentuan']
-              }
-            ].map((col, idx) => (
-              <div key={idx}>
-                <h4 className="font-bold text-lg mb-4 text-amber-300">{col.title}</h4>
-                <ul className="space-y-3 text-stone-300">
-                  {col.links.map((link, i) => (
-                    <li key={i}>
-                      <a href="#" className="hover:text-amber-300 transition-colors">{link}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          
-          <div className="border-t border-stone-700 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-stone-400 text-sm">
-                © 2024 SejahteraKu. Dibuat dengan ❤️ untuk Indonesia
-              </p>
-              <div className="flex gap-4">
-                {[Instagram, Linkedin, Twitter, Facebook].map((Icon, idx) => (
-                  <a key={idx} href="#" className="text-stone-400 hover:text-amber-400 transition-colors">
-                    <Icon size={20} />
-                  </a>
-                ))}
-              </div>
-            </div>
+      <footer className="py-20 px-6 border-t border-white/5 text-stone-500 bg-[#0c0a09]">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
+          <span className="text-white font-display font-bold text-xl uppercase italic tracking-tighter">Sejahtera<span className="text-amber-500">Ku</span></span>
+          <p className="text-sm italic">© 2026 SejahteraKu. Membangun talenta Indonesia dengan hati.</p>
+          <div className="flex gap-10">
+            <Instagram className="hover:text-white transition-colors cursor-pointer" />
+            <Twitter className="hover:text-white transition-colors cursor-pointer" />
+            <Linkedin className="hover:text-white transition-colors cursor-pointer" />
           </div>
         </div>
       </footer>
 
-      {/* Scroll to Top Button */}
-      {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:shadow-3xl transition-all transform hover:scale-110 z-50"
+      {/* --- FLOATING CHATBOT REDESIGNED --- */}
+      <div className="fixed bottom-8 right-8 z-[150] flex flex-col items-end">
+        {isChatOpen && (
+          <div className="mb-6 w-[420px] h-[600px] bg-white rounded-[2rem] shadow-[0_20px_80px_rgba(0,0,0,0.15)] border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-500">
+            {/* Header */}
+            <div className="relative p-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white">
+              <div className="flex items-center gap-4">
+                <div className="relative w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center shadow-lg">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" fillOpacity="0.9"/>
+                    <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fillOpacity="0.7"/>
+                    <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fillOpacity="0.7"/>
+                  </svg>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-slate-900 rounded-full"></div>
+                </div>
+                <div className="flex-1">
+                  <div className="font-display text-xl font-bold tracking-tight">Career Assistant</div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    <span className="text-xs font-medium text-slate-300">Aktif Sekarang</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div ref={scrollRef} className="flex-grow overflow-y-auto p-6 space-y-4 bg-slate-50">
+              {chatHistory.map((chat, i) => (
+                <div key={i} className={`flex ${chat.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%]`}>
+                    {chat.role === 'ai' && (
+                      <div className="flex items-center gap-2 mb-2 ml-1">
+                        <div className="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center shadow-sm">
+                          <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
+                          </svg>
+                        </div>
+                        <span className="text-xs font-semibold text-slate-600">Assistant</span>
+                      </div>
+                    )}
+                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
+                      chat.role === 'user' 
+                        ? 'bg-slate-800 text-white font-medium rounded-tr-sm shadow-md' 
+                        : 'bg-white text-slate-700 border border-slate-200 rounded-tl-sm shadow-sm'
+                    }`}>
+                      {chat.text}
+                    </div>
+                    {chat.role === 'user' && (
+                      <div className="text-[10px] text-slate-400 mt-1.5 text-right mr-1">Terkirim</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex items-center gap-3 ml-1">
+                  <div className="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center shadow-sm">
+                    <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5">
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
+                    </svg>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input Area */}
+            <div className="p-5 bg-white border-t border-slate-200">
+              <div className="flex gap-3 items-end">
+                <div className="flex-1 relative">
+                  <input 
+                    value={message} 
+                    onChange={(e) => setMessage(e.target.value)} 
+                    onKeyDown={(e) => e.key === 'Enter' && handleSend()} 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 px-4 text-slate-800 text-sm outline-none focus:border-slate-400 focus:bg-white transition-all placeholder:text-slate-400" 
+                    placeholder="Tanya tentang karier..." 
+                  />
+                </div>
+                <button 
+                  onClick={handleSend} 
+                  className="bg-slate-800 hover:bg-slate-700 p-3.5 rounded-xl text-white transition-all duration-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                  disabled={!message.trim() || isLoading}
+                >
+                  <Send size={18} />
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-3 text-center font-medium">SejahteraKu AI • Versi Beta</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Floating Button */}
+        <button 
+          onClick={() => setIsChatOpen(!isChatOpen)} 
+          className={`relative w-[72px] h-[72px] rounded-full flex items-center justify-center shadow-xl transition-all duration-500 ${
+            isChatOpen 
+              ? 'bg-slate-700 text-white scale-95' 
+              : 'bg-amber-500 text-white hover:bg-amber-400 hover:scale-105 hover:shadow-2xl'
+          }`}
         >
-          <ChevronUp size={24} />
+          <div className={`transition-transform duration-500 ${isChatOpen ? 'rotate-90' : 'rotate-0'}`}>
+            {isChatOpen ? <X size={28} strokeWidth={2.5} /> : <MessageSquare size={28} strokeWidth={2.5} />}
+          </div>
+          {!isChatOpen && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 border-3 border-white rounded-full">
+              <span className="absolute inset-0 bg-green-500 rounded-full animate-ping"></span>
+            </span>
+          )}
         </button>
+      </div>
+
+      {/* --- MODAL LOGIN --- */}
+      {isLoginOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-[#0c0a09]/90 backdrop-blur-xl animate-in fade-in duration-500">
+          <div className="bg-stone-900 border border-stone-800 w-full max-w-md p-12 rounded-[3rem] relative text-white shadow-[0_0_100px_rgba(0,0,0,0.8)]">
+            <button onClick={() => setIsLoginOpen(false)} className="absolute top-8 right-8 text-stone-500 hover:text-white transition-colors duration-300"><X size={28} /></button>
+            <h2 className="font-display text-5xl mb-10 leading-tight">Masuk Ke <br /><span className="italic text-amber-500 underline decoration-stone-800">Akun Anda.</span></h2>
+            <form onSubmit={handleLogin} className="space-y-8">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-bold ml-2">Email Address</label>
+                <input type="email" required className="w-full bg-stone-950 border border-stone-800 rounded-2xl py-5 px-6 text-sm outline-none focus:border-amber-500/50 transition-all" placeholder="muhammad@sejahteraku.com" onChange={(e) => setLoginData({...loginData, email: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-bold ml-2">Password</label>
+                <input type="password" required className="w-full bg-stone-950 border border-stone-800 rounded-2xl py-5 px-6 text-sm outline-none focus:border-amber-500/50 transition-all" placeholder="••••••••" onChange={(e) => setLoginData({...loginData, password: e.target.value})} />
+              </div>
+              <button type="submit" className="w-full py-5 bg-amber-500 text-black font-bold rounded-2xl hover:bg-amber-400 hover:shadow-2xl transition-all uppercase tracking-[0.2em] text-xs shadow-lg shadow-amber-500/10 active:scale-95">Masuk Sekarang</button>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
