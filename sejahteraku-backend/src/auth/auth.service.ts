@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma.service'; 
+// Pakai ../ (mundur satu tingkat) untuk mencari file di folder src
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
@@ -16,13 +17,13 @@ export class AuthService {
       where: { email: email },
     });
 
-    // Validasi password mentah sesuai data ID 1 di Prisma Studio kamu
+    // Validasi password mentah sesuai data ID 1 (Muhammad)
     if (user && user.password === pass) {
       const { password, ...result } = user;
       return result;
     }
     
-    console.log(`Gagal Validasi: Password '${pass}' tidak cocok untuk '${email}'`);
+    console.log(`Gagal Validasi: Password tidak cocok untuk '${email}'`);
     return null;
   }
 

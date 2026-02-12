@@ -30,7 +30,7 @@ export class AiConsultantService {
             content: question,
           },
         ],
-        model: 'llama3-8b-8192', // Model yang cepat dan pinter
+       model: "llama-3.1-8b-instant", // Model yang cepat dan pinter
         temperature: 0.7, // Biar lebih kreatif dan gak kaku
       });
 
