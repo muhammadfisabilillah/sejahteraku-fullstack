@@ -11,6 +11,8 @@ import { AiModule } from './ai/ai.module';
 import { CoursesModule } from './courses/courses.module';
 import { CertificatesModule } from './certificates/certificates.module';
 import { ProfileModule } from './profile/profile.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { MailerModule } from './mailer/mailer.module';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { ProfileModule } from './profile/profile.module';
     ApplicationsModule, 
     AiModule, 
     CoursesModule, 
-    CertificatesModule, ProfileModule
+    CertificatesModule, ProfileModule, DashboardModule, MailerModule
   ],
   controllers: [],
   providers: [],

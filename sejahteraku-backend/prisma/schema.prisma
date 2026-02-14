@@ -7,32 +7,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// --- PILLAR 00: USER & AUTH ---
 model User {
-  id           Int           @id @default(autoincrement())
-  email        String        @unique
-  password     String
-  name         String?
-  phone        String?
-  role         String        @default("USER") // USER, COMPANY, ADMIN
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  password String
+  name     String?
+  phone    String?
+  role     String  @default("USER") // USER atau COMPANY
+
+  // --- FITUR OTP & VERIFIKASI ---
+  isVerified Boolean   @default(false)
+  otpCode    String? // Simpan 6 digit kode OTP
+  otpExpires DateTime? // Waktu kadaluwarsa OTP
+
   createdAt    DateTime      @default(now())
-  
-  profile      UserProfile?
-  chats        ChatHistory[]
   applications Application[]
   certificates Certificate[]
+  chats        ChatHistory[]
+  profile      UserProfile?
 }
 
 model UserProfile {
   id        Int     @id @default(autoincrement())
-  bio       String?
   skills    String?
+  bio       String?
   education String?
   userId    Int     @unique
   user      User    @relation(fields: [userId], references: [id])
 }
 
-// --- PILLAR 01: WORK (JOB PORTAL) ---
 model Company {
   id          String       @id @default(uuid())
   name        String
@@ -43,61 +46,51 @@ model Company {
 
 model JobPosting {
   id           String        @id @default(uuid())
+  companyId    String
   position     String
   requirements String?
   salaryRange  String?
   location     String?
   postedAt     DateTime      @default(now())
-  
-  companyId    String
-  company      Company       @relation(fields: [companyId], references: [id])
   applications Application[]
+  company      Company       @relation(fields: [companyId], references: [id])
 }
 
 model Application {
-  id        Int      @id @default(autoincrement())
-  status    String   @default("APPLIED") // APPLIED, REVIEWING, REJECTED, ACCEPTED
-  appliedAt DateTime @default(now())
-  
+  id        Int        @id @default(autoincrement())
+  status    String     @default("APPLIED")
+  appliedAt DateTime   @default(now())
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-
   jobId     String
   job       JobPosting @relation(fields: [jobId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
 }
 
-// --- PILLAR 02: LEARN (SKILL ACADEMY) ---
 model Course {
-  id          Int           @id @default(autoincrement())
-  title       String
-  description String
-  mentor      String
-  duration    String
-  level       String        @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
-  createdAt   DateTime      @default(now())
-  
+  id           Int           @id @default(autoincrement())
+  title        String
+  description  String
+  duration     String
+  level        String        @default("BEGINNER")
+  mentor       String
+  createdAt    DateTime      @default(now())
   certificates Certificate[]
 }
 
-// --- PILLAR 03: CERTIFIED (VALIDATION) ---
 model Certificate {
-  id        String   @id @default(uuid())
-  issuedAt  DateTime @default(now())
-  
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  
-  courseId  Int
-  course    Course   @relation(fields: [courseId], references: [id])
+  id       String   @id @default(uuid())
+  issuedAt DateTime @default(now())
+  userId   Int
+  courseId Int
+  course   Course   @relation(fields: [courseId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
 }
 
-// --- AI INTELLIGENCE SYSTEM ---
 model ChatHistory {
   id        Int      @id @default(autoincrement())
   message   String
   response  String
   createdAt DateTime @default(now())
-  
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
 }
