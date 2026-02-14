@@ -1,81 +1,116 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { 
-  Briefcase, MapPin, DollarSign, Search, 
-  ChevronRight, Building2, Verified, Loader2 
-} from 'lucide-react';
+import React from 'react';
+import { ArrowUpRight, Globe, Zap, Shield, Sparkles } from 'lucide-react';
 
-export default function JobBoardPage() {
-  const [jobs, setJobs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const jobs = [
+  {
+    role: "Lead Interface Engineer",
+    company: "Aether Corp",
+    salary: "Rp 32M - 48M",
+    type: "Remote",
+    tags: ["Next.js", "Three.js", "Rust"],
+    desc: "Building the next generation of spatial computing interfaces."
+  },
+  {
+    role: "Senior AI Strategist",
+    company: "Vertex Intelligence",
+    salary: "Rp 28M - 40M",
+    type: "Jakarta",
+    tags: ["PyTorch", "LLM", "Strategy"],
+    desc: "Define the roadmap for autonomous enterprise solutions."
+  },
+  {
+    role: "Principal Product Designer",
+    company: "Solaris Systems",
+    salary: "Rp 25M - 35M",
+    type: "Hybrid",
+    tags: ["Design Ops", "Product", "Motion"],
+    desc: "Crafting minimalist experiences for complex data systems."
+  }
+];
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/jobs');
-        const data = await response.json();
-        setJobs(data);
-      } catch (error) {
-        console.error("Gagal mengambil loker:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchJobs();
-  }, []);
-
+export default function JobsPage() {
   return (
-    <div className="p-8 md:p-12 animate-in fade-in duration-1000">
-      {/* HEADER */}
-      <div className="mb-12 flex justify-between items-end">
-        <div>
-          <div className="flex items-center gap-2 text-amber-500 font-bold tracking-[0.3em] uppercase text-[10px] mb-4">
-            <Briefcase size={14} /> Career Opportunities
-          </div>
-          <h1 className="text-5xl font-display font-bold tracking-tighter text-white">
-            Job <span className="italic text-stone-600">Board.</span>
+    <div className="min-h-screen bg-[#050505] text-[#e5e5e5] p-6 lg:p-12 font-sans">
+      
+      {/* UPPER SECTION: DASHBOARD HEADER */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-24">
+        <div className="lg:col-span-8">
+          <p className="text-amber-500 font-black tracking-[0.4em] text-[10px] mb-6 uppercase">Available Positions</p>
+          <h1 className="text-7xl lg:text-8xl font-black italic tracking-tighter leading-[0.85] text-white">
+            JOIN THE <br />
+            <span className="text-transparent border-b-4 border-amber-500" style={{ WebkitTextStroke: '1px white' }}>ELITE.</span>
           </h1>
+        </div>
+        <div className="lg:col-span-4 flex flex-col justify-end">
+          <p className="text-stone-500 text-sm leading-relaxed max-w-[300px] border-l-2 border-stone-800 pl-6">
+            Kami tidak mencari pekerja biasa. Kami mencari misionaris yang siap mendisrupsi industri melalui teknologi.
+          </p>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="animate-spin text-amber-500" size={40} />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Scanning Market...</p>
+      {/* BENTO STATS / HIGHLIGHTS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-20">
+        <div className="bg-[#111] p-8 rounded-[2rem] border border-stone-900 flex flex-col justify-between h-48">
+          <Zap className="text-amber-500" size={32} />
+          <div>
+            <h4 className="text-3xl font-black italic">120+</h4>
+            <p className="text-stone-500 text-[10px] uppercase font-bold tracking-widest">Active Missions</p>
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6">
-          {jobs.map((job) => (
-            <div key={job.id} className="group bg-white/[0.02] border border-white/5 p-8 rounded-[2.5rem] flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-white/[0.05] hover:border-amber-500/30 transition-all duration-500">
-              <div className="flex items-center gap-6">
-                <div className="w-16 h-16 bg-stone-900 rounded-2xl flex items-center justify-center text-amber-500 border border-white/5 group-hover:scale-110 transition-transform">
-                  <Building2 size={32} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-xl font-bold text-white group-hover:text-amber-500 transition-colors">
-                      {job.position}
-                    </h3>
-                    {job.company?.isVerified && <Verified size={16} className="text-blue-400" />}
-                  </div>
-                  <div className="flex flex-wrap gap-4 text-[10px] font-bold uppercase tracking-widest text-stone-500">
-                    <span className="flex items-center gap-1.5"><Building2 size={12} /> {job.company?.name}</span>
-                    <span className="flex items-center gap-1.5"><MapPin size={12} /> {job.location || 'Remote'}</span>
-                    <span className="flex items-center gap-1.5 text-amber-500/80"><DollarSign size={12} /> {job.salaryRange || 'Competitive'}</span>
-                  </div>
-                </div>
-              </div>
+        <div className="bg-amber-500 p-8 rounded-[2rem] text-black flex flex-col justify-between h-48">
+          <Globe size={32} />
+          <div>
+            <h4 className="text-3xl font-black italic">GLOBAL</h4>
+            <p className="text-black/60 text-[10px] uppercase font-bold tracking-widest">Remote Access</p>
+          </div>
+        </div>
+        <div className="bg-[#111] p-8 rounded-[2rem] border border-stone-900 flex flex-col justify-between h-48">
+          <Sparkles className="text-amber-500" size={32} />
+          <div>
+            <h4 className="text-3xl font-black italic">TOP 1%</h4>
+            <p className="text-stone-500 text-[10px] uppercase font-bold tracking-widest">Selected Talent</p>
+          </div>
+        </div>
+      </div>
 
-              <div className="flex items-center gap-4">
-                <button className="px-8 py-3 bg-white/5 hover:bg-amber-500 hover:text-black rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">
-                  Apply Now
-                </button>
+      {/* THE LIST: EDITORIAL STYLE */}
+      <div className="space-y-0 border-t border-stone-800">
+        {jobs.map((job, i) => (
+          <div 
+            key={i} 
+            className="group flex flex-col lg:flex-row items-start lg:items-center justify-between py-12 border-b border-stone-800 hover:bg-[#0a0a0a] transition-all px-4"
+          >
+            <div className="lg:w-1/3 mb-6 lg:mb-0">
+              <p className="text-stone-600 text-[10px] font-black mb-2 uppercase tracking-widest">0{i + 1} / {job.company}</p>
+              <h3 className="text-3xl font-bold group-hover:text-amber-500 transition-all duration-300 italic uppercase italic tracking-tighter italic font-black">
+                {job.role}
+              </h3>
+            </div>
+
+            <div className="lg:w-1/3 mb-6 lg:mb-0">
+              <p className="text-stone-400 text-sm max-w-xs">{job.desc}</p>
+              <div className="flex gap-2 mt-4">
+                {job.tags.map(tag => (
+                  <span key={tag} className="text-[9px] border border-stone-800 px-2 py-1 rounded text-stone-500 uppercase font-bold">{tag}</span>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      )}
+
+            <div className="lg:w-1/3 flex items-center justify-end gap-12 w-full">
+              <div className="text-right">
+                <p className="text-white font-bold text-sm">{job.salary}</p>
+                <p className="text-stone-600 text-[10px] font-black uppercase tracking-widest">{job.type}</p>
+              </div>
+              <button className="w-16 h-16 rounded-full border border-stone-800 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
+                <ArrowUpRight size={28} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
     </div>
   );
-}   
+}

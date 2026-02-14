@@ -9,7 +9,7 @@ import {
   Settings, 
   LogOut,
   User,
-  BrainCircuit // <-- Tambahkan ikon AI
+  BrainCircuit
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -28,17 +28,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Overview', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
     { name: 'My Academy', icon: <BookOpen size={20} />, path: '/dashboard/academy' },
     { name: 'Job Board', icon: <Briefcase size={20} />, path: '/dashboard/jobs' },
-    
-    // MENU AI CONSULTANT SUDAH KEMBALI DI SINI:
     { name: 'AI Consultant', icon: <BrainCircuit size={20} />, path: '/dashboard/ai-consultant' },
-    
     { name: 'Settings', icon: <Settings size={20} />, path: '/dashboard/settings' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0c0a09] text-white flex">
-      {/* SIDEBAR FIXED */}
-      <aside className="w-72 border-r border-white/5 flex flex-col p-8 bg-[#0c0a09] fixed h-screen z-50">
+    <div className="min-h-screen text-white flex">
+      {/* SIDEBAR FIXED dengan backdrop blur */}
+      <aside className="w-72 border-r border-white/10 flex flex-col p-8 bg-black/40 backdrop-blur-xl fixed h-screen z-50">
         <div className="flex items-center gap-3 mb-12">
            <span className="text-2xl font-display font-bold tracking-tighter text-white uppercase italic">
             Sejahtera<span className="text-amber-500">Ku</span>
@@ -47,7 +44,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <nav className="flex-grow space-y-2">
           {menuItems.map((item) => {
-            // Logika agar menu tetap "Kuning" saat di dalam sub-halaman (seperti [id])
             const isActive = pathname === item.path || (item.path !== '/dashboard' && pathname.startsWith(item.path));
             
             return (
@@ -86,7 +82,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* KONTEN UTAMA */}
+      {/* KONTEN UTAMA - tanpa background warna solid */}
       <main className="flex-grow ml-72 min-h-screen">
         {children}
       </main>

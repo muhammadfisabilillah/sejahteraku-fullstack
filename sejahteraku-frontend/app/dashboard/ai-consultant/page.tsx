@@ -1,177 +1,160 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { 
-  Send, 
-  Bot, 
-  User, 
-  Sparkles, 
-  BrainCircuit, 
-  RefreshCcw,
-  Terminal,
-  AlertCircle
-} from 'lucide-react';
-
-interface Message {
-  role: 'ai' | 'user';
-  content: string;
-}
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Bot, User, Sparkles, Terminal, Cpu, Zap, Loader2 } from 'lucide-react';
 
 export default function AIConsultantPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: 'ai', 
-      content: 'Halo Muhammad! Neural Core SejahteraKu aktif. Silakan ajukan pertanyaan seputar bisnis atau teknis, saya siap menjawab.' 
-    }
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: 'Sistem aktif. Halo Muhammad, aku **SejahteraKu AI**. Ada yang bisa aku bantu buat karir kamu hari ini? 😊' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll ke pesan terbaru
+  // Auto scroll ke bawah
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isLoading]);
+  }, [messages]);
 
-  const handleSendMessage = async () => {
+  const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
-    const currentInput = input;
+    const userMsg = { role: 'user', content: input };
+    const currentQuestion = input; 
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token'); // Mengambil token dari login
+      // Ambil token JWT lo
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
-      // SINKRONISASI DENGAN BACKEND MUHAMMAD
-      const response = await fetch('http://localhost:3000/ai-consultant/ask', {
+      const res = await fetch('http://localhost:3000/ai-consultant/ask', { 
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // Lolos Satpam JwtAuthGuard
+          'Authorization': `Bearer ${token}` 
         },
-        body: JSON.stringify({ question: currentInput }), // Key 'question' sesuai @Body('question')
+        body: JSON.stringify({ question: currentQuestion }), 
       });
-
-      if (!response.ok) {
-        if (response.status === 401) throw new Error('Sesi habis, silakan login ulang.');
-        throw new Error('Gagal terhubung ke AI');
+      
+      const data = await res.json();
+      
+      if (res.ok && data.response) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
+      } else {
+        setMessages((prev) => [...prev, { role: 'assistant', content: 'Aduh, sepertinya ada masalah koneksi. Coba lagi ya! 🙏' }]);
       }
-
-      const data = await response.json();
-      
-      // Mengambil data.response karena biasanya NestJS mengembalikan objek
-      const aiResponse: Message = { 
-        role: 'ai', 
-        content: data.response || data.answer || (typeof data === 'string' ? data : "Terjadi kesalahan format respons.")
-      };
-      
-      setMessages(prev => [...prev, aiResponse]);
-    } catch (err: any) {
-      setMessages(prev => [...prev, { 
-        role: 'ai', 
-        content: `Error: ${err.message}. Pastikan backend running dan kamu sudah login.` 
-      }]);
+    } catch (error) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: 'Koneksi ke Oracle Server terputus. Cek backend kamu, Bos!' }]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="h-[calc(100vh-20px)] p-6 md:p-10 flex flex-col bg-[#0c0a09]">
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-amber-500 font-bold tracking-[0.4em] uppercase text-[10px]">
-            <BrainCircuit size={14} className="animate-pulse" /> Neural System Online
-          </div>
-          <h1 className="text-5xl font-display font-bold tracking-tighter italic text-white">
-            AI <span className="text-stone-700 not-italic">Consultant.</span>
+    <div className="min-h-screen bg-[#050505] text-white p-6 lg:p-12 flex flex-col">
+      {/* HEADER STATUS */}
+      <div className="flex items-center justify-between mb-8 border-b border-stone-900 pb-8">
+        <div>
+          <h1 className="text-4xl font-black italic tracking-tighter flex items-center gap-3">
+            <Cpu className={`text-amber-500 ${isLoading ? 'animate-spin' : 'animate-pulse'}`} size={32} />
+            SEJAHTERAKU <span className="text-amber-500">AI.</span>
           </h1>
+          <p className="text-stone-500 text-[10px] uppercase font-black tracking-[0.4em] mt-2 italic">Powered by Llama 3.1 & Groq</p>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setMessages([{ role: 'ai', content: 'Sesi baru dimulai. Apa yang ingin kamu tanyakan?' }])}
-            className="flex items-center gap-2 px-5 py-2.5 bg-stone-900 border border-white/5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:border-amber-500/50 transition-all text-stone-400"
-          >
-            <RefreshCcw size={14} /> Clear Session
-          </button>
+        <div className="hidden md:flex gap-4">
+          <div className="bg-[#111] border border-stone-800 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-[0_0_15px_rgba(245,158,11,0.1)]">
+            <div className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-500 animate-ping' : 'bg-green-500'}`} />
+            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+              {isLoading ? 'Thinking...' : 'Ready to Serve'}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* CHAT CONTAINER */}
-      <div className="flex-grow bg-white/[0.02] border border-white/5 rounded-[3rem] flex flex-col overflow-hidden relative shadow-2xl">
-        <div 
-          ref={scrollRef}
-          className="flex-grow p-8 md:p-12 overflow-y-auto space-y-10 scrollbar-hide"
-        >
-          {messages.map((msg, i) => (
-            <div 
-              key={i} 
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-4 duration-500`}
-            >
-              <div className={`flex gap-5 max-w-[85%] md:max-w-[70%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border-2 ${
-                  msg.role === 'ai' 
-                  ? 'bg-amber-500 border-amber-300 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)]' 
-                  : 'bg-stone-800 border-white/10 text-white'
-                }`}>
-                  {msg.role === 'ai' ? <Bot size={24} /> : <User size={24} />}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1 overflow-hidden">
+        {/* CHAT WINDOW */}
+        <div className="lg:col-span-8 flex flex-col bg-[#0a0a0a] border border-stone-900 rounded-[2.5rem] overflow-hidden shadow-2xl h-[650px]">
+          <div ref={scrollRef} className="flex-1 p-8 overflow-y-auto space-y-8 no-scrollbar scroll-smooth">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${msg.role === 'user' ? 'bg-amber-500 text-black' : 'bg-stone-800 text-white border border-stone-700'}`}>
+                    {msg.role === 'user' ? <User size={20} /> : <Bot size={20} />}
+                  </div>
+                  <div className={`p-6 rounded-[2rem] text-sm leading-relaxed whitespace-pre-wrap shadow-inner ${
+                    msg.role === 'user' 
+                    ? 'bg-stone-900 text-white rounded-tr-none border border-stone-800' 
+                    : 'bg-[#111] border border-stone-800 text-stone-300 rounded-tl-none'
+                  }`}>
+                    {msg.content}
+                  </div>
                 </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex gap-4 items-center bg-[#111] border border-stone-800 p-4 rounded-3xl animate-pulse">
+                  <Loader2 className="animate-spin text-amber-500" size={16} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-stone-500">Menganalisis Jawaban...</span>
+                </div>
+              </div>
+            )}
+          </div>
 
-                <div className={`relative p-6 md:p-8 rounded-[2.5rem] text-sm md:text-base leading-relaxed ${
-                  msg.role === 'ai' 
-                  ? 'bg-white/[0.03] border border-white/10 text-stone-200 rounded-tl-none' 
-                  : 'bg-amber-500 text-black font-bold rounded-tr-none'
-                }`}>
-                  {msg.content}
-                </div>
-              </div>
+          {/* INPUT BAR */}
+          <div className="p-6 bg-[#0c0c0c] border-t border-stone-900">
+            <div className="relative flex items-center">
+              <input 
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                disabled={isLoading}
+                type="text" 
+                placeholder={isLoading ? "Sabar ya, lagi mikir..." : "Tanya apa saja soal karir..."} 
+                className="w-full bg-[#111] border border-stone-800 rounded-2xl py-5 pl-8 pr-20 outline-none focus:border-amber-500 transition-all text-sm placeholder:text-stone-700"
+              />
+              <button 
+                onClick={handleSend}
+                disabled={isLoading || !input.trim()}
+                className="absolute right-3 p-3 bg-amber-500 text-black rounded-xl hover:bg-amber-400 disabled:bg-stone-800 disabled:text-stone-600 transition-all shadow-lg"
+              >
+                {isLoading ? <Loader2 className="animate-spin" size={22} /> : <Send size={22} />}
+              </button>
             </div>
-          ))}
-          
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="flex gap-5 items-center bg-white/5 px-8 py-5 rounded-full border border-white/10">
-                <Sparkles size={18} className="text-amber-500 animate-spin" />
-                <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-stone-500">AI sedang memproses...</span>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
 
-        {/* INPUT BOX */}
-        <div className="p-8 md:p-10 bg-[#0c0a09]/80 backdrop-blur-2xl border-t border-white/5">
-          <div className="relative flex items-center max-w-5xl mx-auto">
-            <input 
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder="Tanyakan sesuatu tentang strategi bisnis..."
-              className="w-full bg-white/5 border border-white/10 rounded-[2.5rem] py-6 pl-10 pr-24 text-sm outline-none focus:border-amber-500/40 focus:bg-white/[0.07] transition-all placeholder:text-stone-700"
-            />
-            <button 
-              onClick={handleSendMessage}
-              disabled={isLoading}
-              className={`absolute right-3 p-5 rounded-full transition-all ${
-                isLoading ? 'bg-stone-800 text-stone-600' : 'bg-amber-500 text-black hover:scale-105 shadow-lg shadow-amber-500/20'
-              }`}
-            >
-              <Send size={20} />
-            </button>
+        {/* SIDEBAR TOOLS */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-[#111] border border-stone-900 p-8 rounded-[2.5rem] shadow-xl">
+            <h4 className="text-amber-500 text-[10px] font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+              <Sparkles size={14} /> Quick Action
+            </h4>
+            <div className="space-y-3">
+              {['Bikinin Roadmap Karir', 'Tips Lolos Interview', 'Review Skill Saya', 'Gaji Software Engineer 2024'].map((hint, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => setInput(hint)}
+                  className="w-full text-left p-4 rounded-2xl border border-stone-800 text-stone-400 text-[11px] font-bold hover:bg-stone-800 hover:text-white hover:border-amber-500/50 transition-all flex justify-between items-center group"
+                >
+                  {hint}
+                  <Zap size={14} className="opacity-0 group-hover:opacity-100 text-amber-500" />
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex justify-center gap-6 mt-6">
-             <span className="text-[8px] text-stone-700 uppercase tracking-[0.3em] font-black">Encrypted Connection</span>
-             <span className="text-[8px] text-stone-700 uppercase tracking-[0.3em] font-black">AI Model v1.0</span>
+
+          <div className="bg-gradient-to-br from-stone-900 to-black border border-stone-800 p-8 rounded-[2.5rem] relative overflow-hidden group">
+            <div className="absolute -right-8 -top-8 w-24 h-24 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-all" />
+            <Terminal size={32} className="mb-4 text-amber-500" />
+            <h4 className="text-xl font-black italic tracking-tighter mb-2">SYSTEM SECURE</h4>
+            <p className="text-xs font-bold text-stone-500 leading-relaxed">
+              Percakapan kamu dienkripsi secara end-to-end. Oracle AI siap membantu 24/7.
+            </p>
           </div>
         </div>
       </div>

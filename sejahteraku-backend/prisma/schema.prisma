@@ -32,8 +32,13 @@ model UserProfile {
   skills    String?
   bio       String?
   education String?
-  userId    Int     @unique
-  user      User    @relation(fields: [userId], references: [id])
+
+  // --- PENYIMPANAN FILE (BARU) ---
+  avatar String? // Untuk menyimpan nama file/path foto profil
+  cv     String? // Untuk menyimpan nama file/path dokumen CV (PDF)
+
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
 }
 
 model Company {

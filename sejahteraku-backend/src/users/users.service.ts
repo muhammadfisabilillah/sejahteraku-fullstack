@@ -5,33 +5,32 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  // Tambahkan ini untuk memperbaiki error getMyProfile
-  async getMyProfile(userId: number) {
+  async getMyProfile(userId: any) {
+    const id = Number(userId);
     return this.prisma.user.findUnique({
-      where: { id: userId },
-      include: { profile: true },
+      where: { id },
+      include: { profile: true }, // WAJIB biar avatar ID 7 ketarik
     });
   }
 
-  async updateProfile(userId: number, data: any) {
+  async updateProfile(userId: any, data: any) {
+    const id = Number(userId);
+    const pData = {
+      skills: data.skills || "",
+      bio: data.bio || "",
+      avatar: data.avatar, // Simpan nama file (misal: avatar-177...jpeg)
+      cv: data.cv,
+    };
+
     return this.prisma.user.update({
-      where: { id: userId },
+      where: { id },
       data: {
+        name: data.name,
         profile: {
-          upsert: {
-            create: {
-              bio: data.bio,
-              skills: data.skills,
-              education: data.education,
-            },
-            update: {
-              bio: data.bio,
-              skills: data.skills,
-              education: data.education,
-            },
-          },
+          upsert: { create: pData, update: pData },
         },
       },
+      include: { profile: true },
     });
   }
 }
