@@ -8,7 +8,8 @@ import {
   Briefcase, 
   Settings, 
   LogOut,
-  User
+  User,
+  BrainCircuit // <-- Tambahkan ikon AI
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -27,12 +28,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: 'Overview', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
     { name: 'My Academy', icon: <BookOpen size={20} />, path: '/dashboard/academy' },
     { name: 'Job Board', icon: <Briefcase size={20} />, path: '/dashboard/jobs' },
+    
+    // MENU AI CONSULTANT SUDAH KEMBALI DI SINI:
+    { name: 'AI Consultant', icon: <BrainCircuit size={20} />, path: '/dashboard/ai-consultant' },
+    
     { name: 'Settings', icon: <Settings size={20} />, path: '/dashboard/settings' },
   ];
 
   return (
     <div className="min-h-screen bg-[#0c0a09] text-white flex">
-      {/* SIDEBAR FIXED - Tidak akan hilang walau ganti halaman */}
+      {/* SIDEBAR FIXED */}
       <aside className="w-72 border-r border-white/5 flex flex-col p-8 bg-[#0c0a09] fixed h-screen z-50">
         <div className="flex items-center gap-3 mb-12">
            <span className="text-2xl font-display font-bold tracking-tighter text-white uppercase italic">
@@ -42,13 +47,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <nav className="flex-grow space-y-2">
           {menuItems.map((item) => {
+            // Logika agar menu tetap "Kuning" saat di dalam sub-halaman (seperti [id])
             const isActive = pathname === item.path || (item.path !== '/dashboard' && pathname.startsWith(item.path));
+            
             return (
               <Link 
                 key={item.name}
                 href={item.path}
                 className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
-                  isActive ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'text-stone-500 hover:text-white'
+                  isActive 
+                  ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
+                  : 'text-stone-500 hover:text-white hover:bg-white/5'
                 }`}
               >
                 {item.icon} {item.name}
@@ -57,7 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        {/* BAGIAN PROFIL USER DI BAWAH SIDEBAR */}
+        {/* BAGIAN PROFIL USER */}
         <div className="mt-auto pt-8 border-t border-white/5 space-y-4">
           <div className="flex items-center gap-3 px-2">
             <div className="w-10 h-10 rounded-full bg-stone-800 border border-white/10 flex items-center justify-center">
@@ -65,7 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <div className="overflow-hidden">
               <p className="text-sm font-bold truncate">{userName}</p>
-              <p className="text-[10px] text-stone-500 uppercase tracking-widest">Pro Member</p>
+              <p className="text-[10px] text-stone-500 uppercase tracking-widest font-black">Pro Member</p>
             </div>
           </div>
           <button 

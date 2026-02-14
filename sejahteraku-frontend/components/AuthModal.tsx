@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { X, Mail, Lock, Loader2 } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
+import axios from 'axios';
+import OtpModal from './auth/OtpModal';
 
 interface AuthModalProps {
   darkMode: boolean;
@@ -10,105 +12,78 @@ interface AuthModalProps {
 }
 
 export const AuthModal = ({ darkMode, onClose, onLoginSuccess }: AuthModalProps) => {
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // --- INI PEMICUNYA, BOS ---
+  const [showOtp, setShowOtp] = useState(false);
+  const [emailForOtp, setEmailForOtp] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulasi Login (Karena kita sudah buat user 'muhammad@sejahteraku.com' di database)
-    setTimeout(() => {
-      if (email === 'muhammad@sejahteraku.com' && password === 'password123') {
+
+    try {
+      if (isLogin) {
+        const res = await axios.post('http://localhost:3000/auth/login', { email, password });
+        localStorage.setItem('token', res.data.access_token);
         onLoginSuccess();
+        onClose();
       } else {
-        alert("Email atau Password salah. Gunakan kredensial dari database.");
+        // PROSES DAFTAR
+        await axios.post('http://localhost:3000/auth/register', { email, password, name });
+        
+        // SETELAH SUKSES DAFTAR, LAYAR BERUBAH KE OTP
+        setEmailForOtp(email);
+        setShowOtp(true); // <--- INI YANG BIKIN MODAL OTP MUNCUL!
       }
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Gagal!");
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
+  // JIKA OTP LAGI MUNCUL, SEMBUNYIKAN FORM DAFTARNYA
+  if (showOtp) {
+    return <OtpModal isOpen={showOtp} email={emailForOtp} />;
+  }
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
-
-      {/* Modal Card */}
-      <div className={`relative w-full max-w-md overflow-hidden border transition-all duration-500 shadow-2xl ${
-        darkMode ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-black/10'
-      }`}>
-        
-        {/* Decorative Top Bar */}
-        <div className="h-1 w-full bg-emerald-500" />
-
-        <div className="p-10">
-          <div className="flex justify-between items-start mb-10">
-            <div>
-              <h2 className="text-2xl font-black italic tracking-tighter uppercase leading-none">Access_Gateway</h2>
-              <p className="text-[10px] font-bold opacity-40 uppercase tracking-[0.3em] mt-2">Identify_Yourself.v1</p>
-            </div>
-            <button onClick={onClose} className="opacity-40 hover:opacity-100 transition-opacity">
-              <X size={20} />
-            </button>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            {/* Email Field */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 text-white">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-[440px] bg-[#1a1a1a] border border-stone-800 rounded-[40px] p-12 shadow-2xl">
+        <button onClick={onClose} className="absolute right-8 top-8 text-stone-500 hover:text-white"><X size={24} /></button>
+        <h2 className="text-4xl font-black italic tracking-tighter leading-tight mb-10">
+          {isLogin ? "Masuk Ke" : "Daftar"} <br />
+          <span className="text-amber-500">{isLogin ? "Akun Anda." : "Akun Baru."}</span>
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {!isLogin && (
             <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-50">Identity_Email</label>
-              <div className="relative group">
-                <Mail className="absolute left-0 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-emerald-500 group-focus-within:opacity-100 transition-all" size={14} />
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@sejahteraku.com"
-                  className="w-full bg-transparent border-b border-white/10 py-3 pl-8 outline-none text-[12px] font-medium tracking-wide focus:border-emerald-500 transition-all"
-                  required
-                />
-              </div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Nama Lengkap</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-[#0f0f0f] border border-stone-800 rounded-xl py-4 px-6 outline-none focus:border-amber-500" required />
             </div>
-
-            {/* Password Field */}
-            <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-50">Identity_Key</label>
-              <div className="relative group">
-                <Lock className="absolute left-0 top-1/2 -translate-y-1/2 opacity-20 group-focus-within:text-emerald-500 group-focus-within:opacity-100 transition-all" size={14} />
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-transparent border-b border-white/10 py-3 pl-8 outline-none text-[12px] font-medium tracking-wide focus:border-emerald-500 transition-all"
-                  required
-                />
-              </div>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className={`w-full py-4 mt-6 text-[10px] font-black uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-2 ${
-                darkMode ? 'bg-white text-black hover:bg-emerald-500' : 'bg-black text-white hover:bg-emerald-600'
-              }`}
-            >
-              {isLoading ? (
-                <Loader2 className="animate-spin" size={14} />
-              ) : (
-                'Validate_Access'
-              )}
-            </button>
-          </form>
-
-          <div className="mt-10 pt-10 border-t border-white/5 text-center">
-            <p className="text-[8px] font-black opacity-30 uppercase tracking-[0.2em]">
-              Authorized_Personnel_Only // SejahteraKu_Secure_System
-            </p>
+          )}
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-[#0f0f0f] border border-stone-800 rounded-xl py-4 px-6 outline-none focus:border-amber-500" required />
           </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Password</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-[#0f0f0f] border border-stone-800 rounded-xl py-4 px-6 outline-none focus:border-amber-500" required />
+          </div>
+          <button type="submit" className="w-full py-5 mt-4 bg-amber-500 text-black font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 flex justify-center">
+            {isLoading ? <Loader2 className="animate-spin" size={20} /> : (isLogin ? 'MASUK SEKARANG' : 'DAFTAR SEKARANG')}
+          </button>
+        </form>
+        <div className="mt-8 text-center pt-6 border-t border-stone-800">
+          <button onClick={() => setIsLogin(!isLogin)} className="text-[11px] font-black uppercase tracking-widest text-amber-500 hover:text-white">
+            {isLogin ? "// Buat Akun Baru" : "// Login Ke Akun"}
+          </button>
         </div>
       </div>
     </div>
