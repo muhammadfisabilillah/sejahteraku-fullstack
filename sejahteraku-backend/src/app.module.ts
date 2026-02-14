@@ -13,6 +13,7 @@ import { CertificatesModule } from './certificates/certificates.module';
 import { ProfileModule } from './profile/profile.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { MailerModule } from './mailer/mailer.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { MailerModule } from './mailer/mailer.module';
     ApplicationsModule, 
     AiModule, 
     CoursesModule, 
-    CertificatesModule, ProfileModule, DashboardModule, MailerModule
+    CertificatesModule, ProfileModule, DashboardModule, MailerModule, ChatModule
   ],
   controllers: [],
   providers: [],
