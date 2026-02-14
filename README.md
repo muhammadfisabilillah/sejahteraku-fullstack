@@ -1,54 +1,61 @@
-# <p align="center">🌾 SEJAHTERAKU: FULLSTACK AI CAREER PLATFORM 🌾</p>
+# 🚀 SejahteraKu - AI Career Consultant & Job Marketplace
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
-  <img src="https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
-  <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
-  <img src="https://img.shields.io/badge/Groq_AI-f3ac00?style=for-the-badge&logo=google-gemini&logoColor=white" />
-</p>
+<div align="center">
 
----
+![SejahteraKu Logo](https://img.shields.io/badge/SEJAHTERAKU-AI-amber?style=for-the-badge&logo=probot&logoColor=black)
+<br/>
+*Membangun masa depan karir yang lebih sejahtera dengan teknologi.*
 
-## 🇮🇩 Deskripsi Proyek
-**SejahteraKu** adalah mahakarya *Fullstack* yang menggabungkan ketenangan visual alam Indonesia (Persawahan) dengan kecanggihan kecerdasan buatan. Platform ini dirancang untuk membantu talenta lokal menemukan jalan kariernya dengan cara yang lebih manusiawi, transparan, dan tidak kaku.
+![Next.js](https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![NestJS](https://img.shields.io/badge/nestjs-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
----
-
-## 🎯 Struktur Utama Landing Page (500+ Lines Logic)
-Proyek ini mengimplementasikan struktur landing page profesional dalam satu halaman tunggal (`page.tsx`) yang meliputi:
-1.  **Hero Section:** Visual persawahan (`/hero-image.jpg`) dengan headline yang "meledak".
-2.  **Unique Selling Proposition (USP):** Alasan kenapa AI kami lebih "encer" dibanding yang lain.
-3.  **Benefits & Features:** Penjelasan fitur Roadmap Karier dan Skill Academy.
-4.  **Social Proof:** Testimoni nyata dari pengguna yang sudah sukses.
-5.  **Lead Capture:** Formulir pendaftaran untuk mendapatkan E-book gratis.
-6.  **FAQ:** Jawaban santai untuk pertanyaan yang sering muncul.
-7.  **Footer:** Navigasi minimalis dan informasi kontak.
+</div>
 
 ---
 
-## 💻 Tech Stack Detail
+## 🛠️ Tech Stack
 
-### 🎨 Frontend (Client Side)
-* **Framework:** Next.js 14 (App Router)
-* **Styling:** Tailwind CSS dengan kustomisasi **Glassmorphism**.
-* **Icons:** Lucide React.
-* **Fitur Unggulan:** Chatbot transparan yang tembus pandang ke background sawah menggunakan `backdrop-filter: blur`.
+Platform ini menggunakan kombinasi teknologi modern untuk performa tinggi dan keamanan data:
 
-### 🧠 Backend (Server Side)
-* **Framework:** NestJS (TypeScript).
-* **Database:** SQLite dengan **Prisma ORM**.
-* **AI Engine:** Groq Cloud SDK (Llama 3 8B) untuk respon konsultasi kilat.
-* **Authentication:** Passport JWT dengan sistem *Silent Login*.
+* **Frontend Ecosystem:** * ![Next JS](https://img.shields.io/badge/Next-black?style=flat-square&logo=next.js&logoColor=white) `App Router`, `Server Components`
+    * ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white) `Dark Theme UI`
+    * ![Lucide](https://img.shields.io/badge/Lucide_Icons-FF69B4?style=flat-square&logo=lucide&logoColor=white) `Vector Icons`
+
+* **Backend Ecosystem:**
+    * ![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat-square&logo=nestjs&logoColor=white) `Modular Architecture`
+    * ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=flat-square&logo=prisma&logoColor=white) `Type-safe ORM`
+    * ![JWT](https://img.shields.io/badge/JWT-black?style=flat-square&logo=JSON%20web%20tokens) `Stateless Auth`
+
+* **Database & Storage:**
+    * ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white) `Relational DB`
+    * ![Multer](https://img.shields.io/badge/Multer-FFD700?style=flat-square&logo=node.js&logoColor=black) `Local File Uploads`
 
 ---
 
-## ⚙️ Cara Menjalankan (Local Setup)
+## ✨ Core Features (V0.5 Checklist)
 
-### 1. Persiapan Database & Backend
-```bash
-cd sejahteraku-backend
-npm install
-# Buat file .env dan isi API Key Groq kamu
-npx prisma migrate dev --name init
-npm run start:dev
+- [x] **Oracle AI Dashboard:** Konsultasi karir interaktif dengan UI futuristik.
+- [x] **Drag & Drop CV Review:** Analisis dokumen PDF secara otomatis dengan `pdf-parse-fork`.
+- [x] **Persistent Chat Memory:** Riwayat percakapan disimpan secara permanen di database.
+- [x] **Identity Center:** Manajemen dokumen CV dan Profil User (ID 7 - Muhammad).
+- [x] **Smart Status System:** Indikator koneksi server real-time di Dashboard.
+- [ ] **LLM Brain Integration:** (Planned) Menghubungkan Oracle ke Llama 3 / Gemini Pro API.
+- [ ] **Job Matching:** (Planned) Rekomendasi kerja otomatis berdasarkan hasil scan CV.
+
+---
+
+## 🚀 Installation
+
+1. **Clone & Install**
+   ```bash
+   git clone [https://github.com/username/sejahteraku.git](https://github.com/username/sejahteraku.git)
+   npm install
+---
+
+<img width="1907" height="968" alt="Screenshot 2026-02-14 185954" src="https://github.com/user-attachments/assets/4ab20be3-41bb-4704-860c-16cf42f48db4" />
+<img width="1910" height="970" alt="Screenshot 2026-02-14 185933" src="https://github.com/user-attachments/assets/3c989a77-3b44-4eb3-8694-f610f37268f0" />
+
